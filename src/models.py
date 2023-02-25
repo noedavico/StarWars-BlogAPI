@@ -19,6 +19,10 @@ class User(db.Model):
         return {
             "id": self.id,
             "email": self.email,
+            "nombre": self.nombre,
+            "fecha_suscripcion": self.email,
+            "apellido": self.apellido,
+            "favoritos": self.favoritos,
             # do not serialize the password, its a security breach
         }
         
@@ -36,7 +40,11 @@ class Personajes(db.Model):
     def serialize(self):
         return {
             "id": self.id,
-            "email": self.email,
+            "nombre": self.nombre,
+            "altura": self.altura,
+            "genero": self.genero,
+            "peso": self.peso,
+            #"favoritos": self.favoritos,
             # do not serialize the password, its a security breach
         }
         
@@ -54,7 +62,10 @@ class Planetas(db.Model):
     def serialize(self):
         return {
             "id": self.id,
-            "email": self.email,
+            "nombre": self.nombre,
+            "diametro": self.diametro,
+            #"favoritos": self.favoritos,
+            "periodo_orbital": self.periodo_orbital,
             # do not serialize the password, its a security breach          
             }
         
@@ -68,9 +79,16 @@ class Favoritos(db.Model):
         return '<Favoritos %r>' % self.id
 
     def serialize(self):
+        query_planeta = Planetas.query.filter_by(id=self.planetas_id).first()
+        query_personaje = Personajes.query.filter_by(id=self.personajes_id).first()
+        
         return {
             "id": self.id,
-            "email": self.email,
+            "usuario_id": self.usuario_id,
+            "planetas_id": self.planetas_id,
+            "personajes_id": self.personajes_id,
+            "info_planeta": query_planeta.serialize(),
+            "info_personajes": query_personaje.serialize(),
             # do not serialize the password, its a security breach          
             }
             

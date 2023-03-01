@@ -20,9 +20,9 @@ class User(db.Model):
             "id": self.id,
             "email": self.email,
             "nombre": self.nombre,
-            "fecha_suscripcion": self.email,
+            "fecha_suscripcion": self.fecha_suscripcion,
             "apellido": self.apellido,
-            "favoritos": self.favoritos,
+            #"favoritos": self.favoritos,
             # do not serialize the password, its a security breach
         }
         
@@ -81,14 +81,25 @@ class Favoritos(db.Model):
     def serialize(self):
         query_planeta = Planetas.query.filter_by(id=self.planetas_id).first()
         query_personaje = Personajes.query.filter_by(id=self.personajes_id).first()
-        
+        result_planeta = None
+        result_personaje = None
+        if query_planeta is None : 
+            result_planeta 
+        else :
+            result_planeta = query_planeta.serialize()
+            
+        if query_personaje is None : 
+            result_personaje 
+        else :
+            result_personaje = query_personaje.serialize()
+            
         return {
             "id": self.id,
             "usuario_id": self.usuario_id,
             "planetas_id": self.planetas_id,
             "personajes_id": self.personajes_id,
-            "info_planeta": query_planeta.serialize(),
-            "info_personajes": query_personaje.serialize(),
+            "info_planeta": result_planeta,
+            "info_personajes": result_personaje,
             # do not serialize the password, its a security breach          
             }
             

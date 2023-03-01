@@ -60,7 +60,7 @@ def handle_hello():
     #querys o consultas
     users_query = User.query.all()
     result = list(map(lambda item: item.serialize(),users_query))
-    print(result)
+    
     response_body = {
         "msg": "ok",
         "results": result
@@ -133,15 +133,9 @@ def get_info_planetas(planeta_id):
 @app.route('/favoritos', methods=['GET'])
 def load_favoritos():
     favorito_query = Favoritos.query.all() 
-    print(favorito_query)
-    # if favoritos_query == [] : 
-    #     response_body = {
-    #         "msg": "No hay favoritos",
-    #     }
-    #     return  jsonify(response_body), 200
-    # else :
+    
     results = list(map(lambda item: item.serialize(),favorito_query))
-    print(results)
+    
         ##querys o consultas
     response_body = {
         "msg": "ok",
@@ -188,7 +182,7 @@ def create_user():
 @app.route('/planetas', methods=['POST'])
 def create_planeta():
     request_body = request.json
-    print(request_body["nombre"])
+    
     planeta = Planetas(nombre=request_body["nombre"], diametro=request_body["diametro"], periodo_orbital=request_body["periodo_orbital"], poblacion=request_body["poblacion"])
     
     db.session.add(planeta)
@@ -228,6 +222,19 @@ def create_favorito_planeta(planetas_id):
 
     return jsonify(response_body), 200  
 
+@app.route('/favoritos/personaje/<int:personaje_id>', methods=['POST'])
+def create_favorito_personaje(personaje_id):
+    request_body = request.json
+    personaje_fav = Favoritos(usuario_id=request_body["usuario_id"], personajes_id=personaje_id)
+    db.session.add(personaje_fav)
+    db.session.commit()
+    response_body = {
+            "msg": "el planeta favorito fue creado con exito",
+        }
+
+    return jsonify(response_body), 200 
+
+# eliminar un planeta faorito de un usuario 
 @app.route('/favoritos/planetas/<int:position>', methods=['DELETE'])
 def delete_favorito_planeta(position):
     request_body = request.json
@@ -240,49 +247,68 @@ def delete_favorito_planeta(position):
     else :
         db.session.delete(planetas_query)
         db.session.commit()
-        #planetas_result = Favoritos.query.filter_by(usuario_id=request_body["usuario_id"]).all()
-        # print(planetas_result)
-        # print("This is the position to delete: ",position)
-        # print(planetas_query)
         response_body = {
                 "msg": "el planeta fue eliminado con exito",
-                #"result": planetas_result.serialize()
+                "result": planetas_query.serialize()
             }
         return  jsonify(response_body), 200
 
+# eliminar un personaje faorito de un usuario 
+@app.route('/favoritos/personaje/<int:position>', methods=['DELETE'])
+def delete_favorito_personaje(position):
+    request_body = request.json
+    personaje_query = Favoritos.query.filter_by(usuario_id=request_body["usuario_id"], personajes_id=position).first()
+    if personaje_query is None : 
+        response_body = {
+            "msg": "el personaje no existe",
+        }
+        return  jsonify(response_body), 200
+    else :
+        db.session.delete(personaje_query)
+        db.session.commit()
+        response_body = {
+                "msg": "el personaje fue eliminado con exito",
+                "result": personaje_query.serialize()
+            }
+        return  jsonify(response_body), 200
+    
 #borrar un planeta
 @app.route('/planetas/<int:position>', methods=['DELETE'])
 def delete_planetas(position):
     planetas_query = Planetas.query.filter_by(id=position).first()
-    #planeta = Planetas.query.get(position)
-    #User.query.filter_by(id=position).delete()
-    #results= list(map(lambda item: item.serialize(),planetas_query))
-    db.session.delete(planetas_query)
-    db.session.commit()
-    print("This is the position to delete: ",position)
-    print(planetas_query)
-    response_body = {
-            "msg": "el planeta fue eliminado con exito",
-            "result": planetas_query.serialize()
+    if planetas_query is None : 
+        response_body = {
+            "msg": "el planeta no existe",
         }
-    return  jsonify(response_body), 200
+        return  jsonify(response_body), 200
+    else :
+        db.session.delete(planetas_query)
+        db.session.commit()
+        
+        response_body = {
+                "msg": "el planeta fue eliminado con exito",
+                "result": planetas_query.serialize()
+            }
+        return  jsonify(response_body), 200
 
 #borrar un personaje
 @app.route('/personajes/<int:position>', methods=['DELETE'])
 def delete_personajes(position):
     personajes_query = Personajes.query.filter_by(id=position).first()
-    #planeta = Planetas.query.get(position)
-    #User.query.filter_by(id=position).delete()
-    #results= list(map(lambda item: item.serialize(),planetas_query))
-    db.session.delete(personajes_query)
-    db.session.commit()
-    print("This is the position to delete: ",position)
-    print(personajes_query)
-    response_body = {
-            "msg": "el personaje fue eliminado con exito",
-            "result": personajes_query.serialize()
+    if personajes_query is None : 
+        response_body = {
+            "msg": "el planeta no existe",
         }
-    return  jsonify(response_body), 200
+        return  jsonify(response_body), 200
+    else :
+        db.session.delete(personajes_query)
+        db.session.commit()
+        
+        response_body = {
+                "msg": "el personaje fue eliminado con exito",
+                "result": personajes_query.serialize()
+            }
+        return  jsonify(response_body), 200
 
 
     
@@ -312,10 +338,9 @@ def login():
 @jwt_required()
 def get_profile():
     # Accede a la identidad del usuario actual con get_jwt_identity
-
     current_user = get_jwt_identity()
     user = User.query.filter_by(email=current_user).first()
-    print(user)
+    
     return jsonify({"result":user.serialize()}), 200
     
 

@@ -80,6 +80,25 @@ def get_info_user(user_id):
     
     return jsonify(response_body), 200
 
+# crea un usuario nuevo 
+@app.route('/user', methods=['POST'])
+def create_user():
+    request_body = request.json
+    user_query = User.query.filter_by(email=request_body["email"]).first()
+
+    if user_query is None:
+        user = User(email=request_body["email"], password=request_body["password"], nombre=request_body["nombre"], apellido=request_body["apellido"], fecha_suscripcion=request_body["fecha_suscripcion"])
+        
+        db.session.add(user)
+        db.session.commit()
+        
+        response_body = {
+            "msg": "El usuario ha sido creado con exito",
+        }
+        return jsonify(response_body), 200
+    else:
+        return jsonify({"msg":"Usuario ya existe"}), 400
+
 # obtiene los datos de todos los personajes
 @app.route('/personajes', methods=['GET'])
 def load_personajes():
@@ -130,16 +149,16 @@ def get_info_planetas(planeta_id):
 
     return jsonify(response_body), 200
 
+# obtiene los datos de todos los favoritos
 @app.route('/favoritos', methods=['GET'])
 def load_favoritos():
     favorito_query = Favoritos.query.all() 
-    
     results = list(map(lambda item: item.serialize(),favorito_query))
     
-        ##querys o consultas
+    #querys o consultas
     response_body = {
         "msg": "ok",
-        #"results": results
+        "results": results
         }
 
     return jsonify(response_body), 200
@@ -158,55 +177,6 @@ def  get_info_favoritos (usuario_id):
 
     return jsonify(response_body), 200
 
-# crea un usuario nuevo 
-@app.route('/user', methods=['POST'])
-def create_user():
-    request_body = request.json
-    user_query = User.query.filter_by(email=request_body["email"]).first()
-
-    if user_query is None:
-        user = User(email=request_body["email"], password=request_body["password"])
-        
-        db.session.add(user)
-        db.session.commit()
-        
-        response_body = {
-            "msg": "El usuario ha sido creado con exito",
-            # "result": user_query.serialize()
-        }
-        return jsonify(response_body), 200
-    else:
-        return jsonify({"msg":"Usuario ya existe"}), 400
-    
-# crea un nuevo planeta  
-@app.route('/planetas', methods=['POST'])
-def create_planeta():
-    request_body = request.json
-    
-    planeta = Planetas(nombre=request_body["nombre"], diametro=request_body["diametro"], periodo_orbital=request_body["periodo_orbital"], poblacion=request_body["poblacion"])
-    
-    db.session.add(planeta)
-    db.session.commit()
-    response_body = {
-            "msg": "el planeta fue creado con exito",
-        }
-
-    return jsonify(response_body), 200  
-  
-# crea un nuevo personaje 
-@app.route('/personajes', methods=['POST'])
-def create_personaje ():
-    request_body = request.json
-    nombre= request_body["nombre"]
-    personaje  = Personajes(nombre=request_body["nombre"], altura=request_body["altura"], genero=request_body["genero"], peso=request_body["peso"])
-    
-    db.session.add(personaje)
-    db.session.commit()
-    response_body = {
-            "msg": "el personaje " + nombre +" fue creado con exito",
-        }
-
-    return jsonify(response_body), 200 
 
 # falta comprobar funcionamiento porque se rompi denuevo favoritos 
 
@@ -222,7 +192,7 @@ def create_favorito_planeta(planetas_id):
 
     return jsonify(response_body), 200  
 
-@app.route('/favoritos/personaje/<int:personaje_id>', methods=['POST'])
+@app.route('/favoritos/personajes/<int:personaje_id>', methods=['POST'])
 def create_favorito_personaje(personaje_id):
     request_body = request.json
     personaje_fav = Favoritos(usuario_id=request_body["usuario_id"], personajes_id=personaje_id)
@@ -254,7 +224,7 @@ def delete_favorito_planeta(position):
         return  jsonify(response_body), 200
 
 # eliminar un personaje faorito de un usuario 
-@app.route('/favoritos/personaje/<int:position>', methods=['DELETE'])
+@app.route('/favoritos/personajes/<int:position>', methods=['DELETE'])
 def delete_favorito_personaje(position):
     request_body = request.json
     personaje_query = Favoritos.query.filter_by(usuario_id=request_body["usuario_id"], personajes_id=position).first()
@@ -271,6 +241,36 @@ def delete_favorito_personaje(position):
                 "result": personaje_query.serialize()
             }
         return  jsonify(response_body), 200
+
+# crea un nuevo planeta  
+@app.route('/planetas', methods=['POST'])
+def create_planeta():
+    request_body = request.json
+    
+    planeta = Planetas(nombre=request_body["nombre"], diametro=request_body["diametro"], periodo_orbital=request_body["periodo_orbital"], poblacion=request_body["poblacion"])
+    
+    db.session.add(planeta)
+    db.session.commit()
+    response_body = {
+            "msg": "el planeta fue creado con exito",
+        }
+
+    return jsonify(response_body), 200  
+  
+# crea un nuevo personaje 
+@app.route('/personajes', methods=['POST'])
+def create_personaje ():
+    request_body = request.json
+    nombre= request_body["nombre"]
+    personaje  = Personajes(nombre=request_body["nombre"], altura=request_body["altura"], genero=request_body["genero"], peso=request_body["peso"])
+    
+    db.session.add(personaje)
+    db.session.commit()
+    response_body = {
+            "msg": "el personaje " + nombre +" fue creado con exito",
+        }
+
+    return jsonify(response_body), 200 
     
 #borrar un planeta
 @app.route('/planetas/<int:position>', methods=['DELETE'])
@@ -330,6 +330,26 @@ def login():
         return jsonify({"msg": "Bad email or password"}), 401
     access_token = create_access_token(identity=email)
     return jsonify(access_token=access_token)
+
+#crear nuevo usaurio 
+@app.route("/singup", methods=["POST"])
+def singup():
+    request_body = request.json
+    user_query = User.query.filter_by(email=request_body["email"]).first()
+
+    if user_query is None:
+        user = User(email=request_body["email"], password=request_body["password"])
+        
+        db.session.add(user)
+        db.session.commit()
+        
+        response_body = {
+            "msg": "El usuario ha sido creado con exito",
+            # "result": user_query.serialize()
+        }
+        return jsonify(response_body), 200
+    else:
+        return jsonify({"msg":"Usuario ya existe"}), 400
 
 # Cree una ruta para autenticar a sus usuarios y devolver JWT. El
 # La función create_access_token() se usa para generar realmente el JWT..

@@ -7,7 +7,7 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nombre = db.Column(db.String(250), nullable=False)
     password = db.Column(db.String(250), nullable=False)
-    fecha_suscripcion =  db.Column(db.String(50))
+    fecha_suscripcion =  db.Column(db.String(50), nullable=True)
     apellido =  db.Column(db.String(250), nullable=False)
     email =  db.Column(db.String(250), unique=True, nullable=False)
     favoritos = db.relationship('Favoritos',backref='user', lazy=True)

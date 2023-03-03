@@ -338,8 +338,8 @@ def singup():
     user_query = User.query.filter_by(email=request_body["email"]).first()
 
     if user_query is None:
-        user = User(email=request_body["email"], password=request_body["password"])
-        
+        #user = User(email=request_body["email"], password=request_body["password"])
+        user = User(email=request_body["email"], password=request_body["password"], nombre=request_body["nombre"], apellido=request_body["apellido"], fecha_suscripcion=request_body["fecha_suscripcion"])
         db.session.add(user)
         db.session.commit()
         
@@ -350,6 +350,7 @@ def singup():
         return jsonify(response_body), 200
     else:
         return jsonify({"msg":"Usuario ya existe"}), 400
+    
 
 # Cree una ruta para autenticar a sus usuarios y devolver JWT. El
 # La función create_access_token() se usa para generar realmente el JWT..
@@ -360,8 +361,11 @@ def get_profile():
     # Accede a la identidad del usuario actual con get_jwt_identity
     current_user = get_jwt_identity()
     user = User.query.filter_by(email=current_user).first()
-    
-    return jsonify({"result":user.serialize()}), 200
+    if user != None:
+        
+        return jsonify({"isLogged":True}), 200
+    else:
+        return jsonify({"isLogged":False}), 401
     
 
 
